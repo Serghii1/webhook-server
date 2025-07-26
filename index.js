@@ -17,7 +17,7 @@ const sheets = google.sheets({ version: 'v4', auth });
 
 // Функція для додавання ліда у Google Таблицю
 async function appendLead(data) {
-  const spreadsheetId = 1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY;
+  const spreadsheetId = '1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY';
   const range = 'A:E'; // Стовпці для запису
 
   const values = [
