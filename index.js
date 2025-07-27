@@ -17,8 +17,8 @@ const sheets = google.sheets({ version: 'v4', auth });
 
 // Функція для додавання ліда у Google Таблицю
 async function appendLead(data) {
-  const spreadsheetId = '1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY';
-  const range = 'A:E';
+  const spreadsheetId = '1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY'; // твій ID таблиці
+  const range = 'A:E'; // стовпці для запису
 
   const values = [
     [
@@ -47,7 +47,7 @@ async function appendLead(data) {
 
 // GET /webhook для валідації від Facebook
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = "my_custom_token";
+  const VERIFY_TOKEN = "my_custom_token"; // твій токен для валідації
 
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -66,11 +66,8 @@ app.get('/webhook', (req, res) => {
 });
 
 // POST /webhook для прийому лідів від Facebook
-app.post('/webhook', (req, res) => {
-  console.log('Отримано POST:', JSON.stringify(req.body));
-  res.status(200).send('Отримано!');
-});
-
+app.post('/webhook', async (req, res) => {
+  console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
 
   try {
     const leadData = {
@@ -90,7 +87,7 @@ app.post('/webhook', (req, res) => {
   }
 });
 
-// Проста перевірка сервера
+// Перевірка сервера
 app.get('/', (req, res) => {
   res.send('Webhook сервер працює');
 });
