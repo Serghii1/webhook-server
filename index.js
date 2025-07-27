@@ -1,5 +1,6 @@
+require('dotenv').config();
+
 const express = require('express');
-const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -16,31 +17,11 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({ version: 'v4', auth });
 
-// Функція для отримання повних даних ліда з Facebook Graph API
-async function getLeadDetails(leadgen_id) {
-  const access_token = process.env.FB_ACCESS_TOKEN; // Задай у .env
-  const url = `https://graph.facebook.com/v19.0/${leadgen_id}?access_token=${access_token}`;
-
-  try {
-    const response = await axios.get(url);
-    const fields = response.data?.field_data || [];
-
-    const lead = {};
-    fields.forEach(field => {
-      lead[field.name] = field.values?.[0] || '';
-    });
-
-    return lead;
-  } catch (error) {
-    console.error('Помилка отримання деталей ліда:', error.response?.data || error.message);
-    return {};
-  }
-}
+const spreadsheetId = process.env.SPREADSHEET_ID;
 
 // Функція для додавання ліда у Google Таблицю
 async function appendLead(data) {
-  const spreadsheetId = '1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY';
-  const range = 'A:I'; // Колонки для запису
+  const range = 'A:F'; // Стовпці для запису
 
   const values = [
     [
@@ -49,9 +30,6 @@ async function appendLead(data) {
       data.form_id || '',
       data.page_id || '',
       data.created_time || '',
-      data.name || '',
-      data.phone || '',
-      data.email || '',
       data.date || new Date().toISOString(),
     ],
   ];
@@ -73,7 +51,7 @@ async function appendLead(data) {
 
 // GET /webhook для валідації від Facebook
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = "my_custom_token"; // Заміни на свій токен
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -96,21 +74,14 @@ app.post('/webhook', async (req, res) => {
   console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
 
   try {
-    const entry = req.body.entry?.[0];
-    const change = entry?.changes?.[0];
-    const value = change?.value || {};
-
-    const fullLead = await getLeadDetails(value.leadgen_id);
+    const data = req.body.entry?.[0]?.changes?.[0]?.value || {};
 
     const leadData = {
-      id: value.leadgen_id || '',
-      ad_id: value.ad_id || '',
-      form_id: value.form_id || '',
-      page_id: value.page_id || '',
-      created_time: value.created_time || '',
-      name: fullLead.full_name || '',
-      phone: fullLead.phone_number || '',
-      email: fullLead.email || '',
+      id: data.leadgen_id || '',
+      ad_id: data.ad_id || '',
+      form_id: data.form_id || '',
+      page_id: data.page_id || '',
+      created_time: data.created_time || '',
       date: new Date().toISOString(),
     };
 
