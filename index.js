@@ -66,8 +66,11 @@ app.get('/webhook', (req, res) => {
 });
 
 // POST /webhook для прийому лідів від Facebook
-app.post('/webhook', async (req, res) => {
-  console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
+app.post('/webhook', (req, res) => {
+  console.log('Отримано POST:', JSON.stringify(req.body));
+  res.status(200).send('Отримано!');
+});
+
 
   try {
     const leadData = {
