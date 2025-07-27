@@ -31,9 +31,7 @@ async function appendLead(data) {
     ],
   ];
 
-  const resource = {
-    values,
-  };
+  const resource = { values };
 
   try {
     await sheets.spreadsheets.values.append({
@@ -50,7 +48,7 @@ async function appendLead(data) {
 
 // GET /webhook для валідації від Facebook
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = "my_custom_token"; // Токен для перевірки (став свій)
+  const VERIFY_TOKEN = "my_custom_token"; // Встав свій VERIFY_TOKEN
 
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -73,14 +71,16 @@ app.post('/webhook', async (req, res) => {
   console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
 
   try {
-    const data = req.body;
+    const entry = req.body.entry?.[0];
+    const change = entry?.changes?.[0];
+    const value = change?.value;
 
     const leadData = {
-      id: data.value?.leadgen_id || '',
-      ad_id: data.value?.ad_id || '',
-      form_id: data.value?.form_id || '',
-      page_id: data.value?.page_id || '',
-      created_time: data.value?.created_time || '',
+      id: value?.leadgen_id || '',
+      ad_id: value?.ad_id || '',
+      form_id: value?.form_id || '',
+      page_id: value?.page_id || '',
+      created_time: value?.created_time || '',
       date: new Date().toISOString(),
     };
 
@@ -93,7 +93,7 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// Проста перевірка сервера
+// Перевірка сервера
 app.get('/', (req, res) => {
   res.send('Webhook сервер працює');
 });
