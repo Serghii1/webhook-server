@@ -6,6 +6,18 @@ const PORT = process.env.PORT || 3000;
 
 const { google } = require('googleapis');
 const path = require('path');
+async function fetchLeadDetails(leadgen_id, access_token) {
+  try {
+    const response = await axios.get(`https://graph.facebook.com/v17.0/${leadgen_id}`, {
+      params: { access_token }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Помилка отримання деталей ліда:', error);
+    return null;
+  }
+}
+
 
 app.use(express.json());
 
