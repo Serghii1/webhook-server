@@ -67,7 +67,9 @@ app.get('/webhook', (req, res) => {
 
 // POST /webhook для прийому лідів від Facebook
 app.post('/webhook', async (req, res) => {
-  console.log('Новий лід:', JSON.stringify(req.body));
+  console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
+  res.status(200).send('Отримано!');
+});
 
   try {
     // Тут треба діставати реальні дані ліда з req.body за структурою Facebook
