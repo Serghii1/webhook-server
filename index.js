@@ -81,19 +81,31 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-// POST /webhook для прийому лідів від Facebook
 app.post('/webhook', async (req, res) => {
   console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
 
   try {
-    const data = req.body.entry?.[0]?.changes?.[0]?.value || {};
+    const data = req.body;
+    const leadgen_id = data.entry?.[0]?.changes?.[0]?.value?.leadgen_id;
+    const pageAccessToken = process.env.PAGE_ACCESS_TOKEN; // Токен сторінки має бути в .env
+
+    if (!leadgen_id) {
+      console.log('Leadgen ID відсутній');
+      return res.sendStatus(400);
+    }
+
+    const leadDetails = await fetchLeadDetails(leadgen_id, pageAccessToken);
+
+    if (!leadDetails) {
+      console.log('Не вдалося отримати деталі ліда');
+      return res.sendStatus(500);
+    }
 
     const leadData = {
-      id: data.leadgen_id || '',
-      ad_id: data.ad_id || '',
-      form_id: data.form_id || '',
-      page_id: data.page_id || '',
-      created_time: data.created_time || '',
+      id: leadDetails.id || '',
+      name: leadDetails.full_name || '',
+      phone: leadDetails.phone_number || '',
+      email: leadDetails.email || '',
       date: new Date().toISOString(),
     };
 
@@ -104,13 +116,4 @@ app.post('/webhook', async (req, res) => {
     console.error('Помилка обробки ліда:', error);
     res.sendStatus(500);
   }
-});
-
-// Проста перевірка сервера
-app.get('/', (req, res) => {
-  res.send('Webhook сервер працює');
-});
-
-app.listen(PORT, () => {
-  console.log(`Сервер запущено на порту ${PORT}`);
 });
