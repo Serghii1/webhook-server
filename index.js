@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 3000;
 
 const { google } = require('googleapis');
 const path = require('path');
+
 async function fetchLeadDetails(leadgen_id, access_token) {
   try {
     const response = await axios.get(`https://graph.facebook.com/v17.0/${leadgen_id}`, {
@@ -13,11 +14,10 @@ async function fetchLeadDetails(leadgen_id, access_token) {
     });
     return response.data;
   } catch (error) {
-    console.error('Помилка отримання деталей ліда:', error);
+    console.error('Помилка отримання деталей ліда:', error.response?.data || error.message);
     return null;
   }
 }
-
 
 app.use(express.json());
 
@@ -33,15 +33,14 @@ const spreadsheetId = process.env.SPREADSHEET_ID;
 
 // Функція для додавання ліда у Google Таблицю
 async function appendLead(data) {
-  const range = 'A:F'; // Стовпці для запису
+  const range = 'A:E'; // Стовпці для запису
 
   const values = [
     [
       data.id || '',
-      data.ad_id || '',
-      data.form_id || '',
-      data.page_id || '',
-      data.created_time || '',
+      data.name || '',
+      data.phone || '',
+      data.email || '',
       data.date || new Date().toISOString(),
     ],
   ];
@@ -81,6 +80,7 @@ app.get('/webhook', (req, res) => {
   }
 });
 
+// POST /webhook для прийому лідів від Facebook
 app.post('/webhook', async (req, res) => {
   console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
 
@@ -116,4 +116,13 @@ app.post('/webhook', async (req, res) => {
     console.error('Помилка обробки ліда:', error);
     res.sendStatus(500);
   }
+});
+
+// Проста перевірка сервера
+app.get('/', (req, res) => {
+  res.send('Webhook сервер працює');
+});
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущено на порту ${PORT}`);
 });
