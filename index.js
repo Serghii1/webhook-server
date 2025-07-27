@@ -17,20 +17,23 @@ const sheets = google.sheets({ version: 'v4', auth });
 
 // Функція для додавання ліда у Google Таблицю
 async function appendLead(data) {
-  const spreadsheetId = '1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY'; // Твій ID таблиці
-  const range = 'A:E'; // Колонки для запису
+  const spreadsheetId = '1P4KRWSR8U8_jevJ83PQGyoyXTnVQ4uF7lzv0LjxrWGY';
+  const range = 'A:F'; // Стовпці для запису
 
   const values = [
     [
       data.id || '',
-      data.name || '',
-      data.phone || '',
-      data.email || '',
+      data.ad_id || '',
+      data.form_id || '',
+      data.page_id || '',
+      data.created_time || '',
       data.date || new Date().toISOString(),
     ],
   ];
 
-  const resource = { values };
+  const resource = {
+    values,
+  };
 
   try {
     await sheets.spreadsheets.values.append({
@@ -45,9 +48,9 @@ async function appendLead(data) {
   }
 }
 
-// GET /webhook - для валідації Facebook
+// GET /webhook для валідації від Facebook
 app.get('/webhook', (req, res) => {
-  const VERIFY_TOKEN = "my_custom_token"; // Твій токен (постав свій)
+  const VERIFY_TOKEN = "my_custom_token"; // Токен для перевірки (став свій)
 
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -60,19 +63,24 @@ app.get('/webhook', (req, res) => {
     } else {
       res.sendStatus(403);
     }
+  } else {
+    res.sendStatus(400);
   }
 });
 
-// POST /webhook - прийом лідів
+// POST /webhook для прийому лідів від Facebook
 app.post('/webhook', async (req, res) => {
   console.log('Отримано POST:', JSON.stringify(req.body, null, 2));
 
   try {
+    const data = req.body;
+
     const leadData = {
-      id: req.body.entry?.[0]?.changes?.[0]?.value?.leadgen_id || '',
-      name: req.body.entry?.[0]?.changes?.[0]?.value?.full_name || '',
-      phone: req.body.entry?.[0]?.changes?.[0]?.value?.phone_number || '',
-      email: req.body.entry?.[0]?.changes?.[0]?.value?.email || '',
+      id: data.value?.leadgen_id || '',
+      ad_id: data.value?.ad_id || '',
+      form_id: data.value?.form_id || '',
+      page_id: data.value?.page_id || '',
+      created_time: data.value?.created_time || '',
       date: new Date().toISOString(),
     };
 
